@@ -1,0 +1,21 @@
+/ {
+    chosen {
+        zmk,backlight = &lily58_backlight;
+    };
+
+    lily58_backlight: gpioleds {
+        compatible = "gpio-leds";
+
+        backlight_led: led_0 {
+            /* Update the pin to match your backlight wiring. */
+            /* gpios = <&pro_micro 4 GPIO_ACTIVE_HIGH>; */
+	    gpios = <&pro_micro 19 GPIO_ACTIVE_HIGH>
+		  , <&pro_micro 18 GPIO_ACTIVE_HIGH>
+		  , <&pro_micro 15 GPIO_ACTIVE_HIGH>
+		  , <&pro_micro 14 GPIO_ACTIVE_HIGH>
+		  , <&pro_micro 16 GPIO_ACTIVE_HIGH>
+		  , <&pro_micro 10 GPIO_ACTIVE_HIGH>
+                  ;
+        };
+    };
+};
