@@ -395,7 +395,7 @@
 &none   &kp ES_IEXCL  &none  &none   &none   &none                       &none       &none     &none     &none        &none       &kp DEL
 &none   &none         &none  &none   &none   &none                       &none       &none     &none     &none        &none       &kp ES_IQMARK
 &none   &none         &none  &none   &none   &none 		   	 &kp LEFT    &kp DOWN  &kp UP    &kp RIGHT    &none       &kp RA(BSLH)
-&none   &none         &none  &none   &none   &none    &trans   &trans    &none       &none     &none     &kp ES_LT    &kp ES_GT   &kp RA(LBKT) 
+&none   &none         &none  &none   &none   &none    &trans   &trans    &none       &none     &none     &none        &kp ES_LT   &kp RA(LBKT) 
                              &trans  &trans  &trans   &trans   &trans    &trans      &trans    &kp RET
             >;
 
