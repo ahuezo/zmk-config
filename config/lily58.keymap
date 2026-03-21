@@ -397,7 +397,7 @@
 &none   &none         &none  &none   &none   &none                       &none       &none     &none     &none        &none       &kp ES_IQMARK
 &none   &none         &none  &none   &none   &none 		   	 &kp LEFT    &kp DOWN  &kp UP    &kp RIGHT    &none       &kp RA(BSLH)
 &none   &none         &none  &none   &none   &none    &trans   &trans    &none       &none     &none     &none        &kp ES_LT   &kp RA(LBKT) 
-                             &trans  &trans  &trans   &trans   &trans    &trans      &trans    &kp RET
+                             &trans  &trans  &trans   &trans   &trans    &kp RET     &trans    &kp RET
             >;
 
             sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
