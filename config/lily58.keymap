@@ -9,6 +9,7 @@
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/ext_power.h>
+#include <dt-bindings/zmk/rgb.h>
 
 /*
  * Localized Keys for Spanish
@@ -371,13 +372,13 @@
 // ------------------------------------------------------------------------------------------------------------
 // | BTCLR | BT1 | BT2 |  BT3 |  BT4 |  BT5 |                   |      |      |      |      |     |     |
 // |  F1   | F2  | F3  |  F4  |  F5  |  F6  |                   |  F7  |  F8  |  F9  |  F10 | F11 | F12 |
-// |       |     |     |      |      |      |                   |      |      |      |      |     |     |
+// | RGBTOG| RGB- | RGB+| PREV | NEXT |      |                   |      |      |      |      |     |     |
 // |       |     |     |      |      |      |        |  |       |      |      |      |      |     |     |
 //                     |      |      |      |        |  |       |      |      |      |
             bindings = <
 &bt BT_CLR       &bt BT_SEL 0     &bt BT_SEL 1   &bt BT_SEL 2   &bt BT_SEL 3 &bt BT_SEL 4                       &none     &none    &none     &none     &none     &none
 &kp F1           &kp F2           &kp F3         &kp F4         &kp F5       &kp F6                             &kp F7    &kp F8   &kp F9    &kp F10   &kp F11   &kp F12
-&studio_unlock   &none            &none          &none          &none        &none                              &none     &none    &none     &none     &none     &none
+&studio_unlock   &rgb_ug RGB_TOG  &rgb_ug RGB_BRD &rgb_ug RGB_BRI &rgb_ug RGB_EFR &rgb_ug RGB_EFF              &none     &none    &none     &none     &none     &none
 &trans           &none            &none  	 &none          &none        &none          &none     &none     &none     &none    &none     &none     &none     &none 
                         	                 &trans         &trans       &trans         &trans    &trans    &trans    &trans   &trans
             >;
