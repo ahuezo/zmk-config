@@ -4,9 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <zmk/display/widgets/battery_status.h>
-#include <zmk/display/widgets/layer_status.h>
-
 #include <lvgl.h>
 #include <zephyr/devicetree.h>
 #include <zephyr/logging/log.h>
@@ -23,14 +20,6 @@ LV_IMG_DECLARE(lily58_fish_right);
 LV_IMG_DECLARE(lily58_bubbles_0);
 LV_IMG_DECLARE(lily58_bubbles_1);
 LV_IMG_DECLARE(lily58_bubbles_2);
-
-#if IS_ENABLED(CONFIG_ZMK_WIDGET_BATTERY_STATUS)
-static struct zmk_widget_battery_status battery_status_widget;
-#endif
-
-#if IS_ENABLED(CONFIG_ZMK_WIDGET_LAYER_STATUS)
-static struct zmk_widget_layer_status layer_status_widget;
-#endif
 
 struct bubble_animation_state {
     lv_obj_t *bubble_image;
@@ -90,20 +79,6 @@ lv_obj_t *zmk_display_status_screen(void) {
     }
 
     bubble_timer = lv_timer_create(bubble_tick_cb, 500, &bubble_animation_state);
-
-#if IS_ENABLED(CONFIG_ZMK_WIDGET_BATTERY_STATUS)
-    zmk_widget_battery_status_init(&battery_status_widget, screen);
-    lv_obj_align(zmk_widget_battery_status_obj(&battery_status_widget),
-                 art_variant == OLED_ART_VARIANT_RIGHT ? LV_ALIGN_TOP_LEFT : LV_ALIGN_TOP_RIGHT, 0, 0);
-#endif
-
-#if IS_ENABLED(CONFIG_ZMK_WIDGET_LAYER_STATUS)
-    zmk_widget_layer_status_init(&layer_status_widget, screen);
-    lv_obj_set_style_text_font(zmk_widget_layer_status_obj(&layer_status_widget),
-                               lv_theme_get_font_small(screen), LV_PART_MAIN);
-    lv_obj_set_pos(zmk_widget_layer_status_obj(&layer_status_widget),
-                   art_variant == OLED_ART_VARIANT_RIGHT ? 8 : 72, 18);
-#endif
 
     return screen;
 }
