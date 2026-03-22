@@ -14,7 +14,6 @@
 #include <zephyr/sys/util.h>
 
 #include <zmk/ble.h>
-#include <zmk/endpoints.h>
 #include <zmk/keymap.h>
 #include <zmk/usb.h>
 #include <zmk/wpm.h>
@@ -91,7 +90,7 @@ static void set_mode(struct lily58_oled_state *state, bool show_status) {
 
 static void update_battery_label(struct lily58_oled_state *state) {
     char text[8] = {};
-    uint8_t level = bt_gatt_bas_get_battery_level();
+    uint8_t level = bt_bas_get_battery_level();
 
 #if IS_ENABLED(CONFIG_USB)
     if (zmk_usb_is_powered()) {
@@ -122,22 +121,19 @@ static void update_output_label(struct lily58_oled_state *state) {
         return;
     }
 
-    switch (zmk_endpoints_selected()) {
-    case ZMK_ENDPOINT_USB:
-        snprintf(text, sizeof(text), LV_SYMBOL_USB);
-        break;
-    case ZMK_ENDPOINT_BLE:
-        if (!zmk_ble_active_profile_is_open()) {
-            snprintf(text, sizeof(text), LV_SYMBOL_WIFI "%u %s", zmk_ble_active_profile_index(),
-                     zmk_ble_active_profile_is_connected() ? LV_SYMBOL_OK : LV_SYMBOL_CLOSE);
-        } else {
+    if (!zmk_ble_active_profile_is_open()) {
+        snprintf(text, sizeof(text), LV_SYMBOL_WIFI "%u %s", zmk_ble_active_profile_index(),
+                 zmk_ble_active_profile_is_connected() ? LV_SYMBOL_OK : LV_SYMBOL_CLOSE);
+    } else {
+#if IS_ENABLED(CONFIG_USB)
+        if (zmk_usb_is_powered()) {
+            snprintf(text, sizeof(text), LV_SYMBOL_USB);
+        } else
+#endif
+        {
             snprintf(text, sizeof(text), LV_SYMBOL_WIFI "%u %s", zmk_ble_active_profile_index(),
                      LV_SYMBOL_SETTINGS);
         }
-        break;
-    default:
-        snprintf(text, sizeof(text), "?");
-        break;
     }
 
     lv_label_set_text(state->output_label, text);
