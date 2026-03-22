@@ -5,157 +5,202 @@
  */
 
 #include <lvgl.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <zephyr/bluetooth/services/bas.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/util.h>
 
+#include <zmk/ble.h>
+#include <zmk/endpoints.h>
+#include <zmk/keymap.h>
+#include <zmk/usb.h>
+#include <zmk/wpm.h>
+
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
-LV_IMG_DECLARE(lily58_fish_left);
-LV_IMG_DECLARE(lily58_fish_right);
-LV_IMG_DECLARE(lily58_fish_left_alt);
-LV_IMG_DECLARE(lily58_fish_right_alt);
-LV_IMG_DECLARE(lily58_bubbles_0);
-LV_IMG_DECLARE(lily58_bubbles_1);
-LV_IMG_DECLARE(lily58_bubbles_2);
+LV_IMG_DECLARE(lily58_matrix_0);
+LV_IMG_DECLARE(lily58_matrix_1);
+LV_IMG_DECLARE(lily58_matrix_2);
+LV_IMG_DECLARE(lily58_matrix_3);
 
-struct scene_config {
-    const lv_img_dsc_t *fish_art;
-    lv_coord_t fish_x;
-    lv_coord_t fish_y;
-    lv_coord_t bubble_x;
-    lv_coord_t bubble_y;
-};
-
-struct bubble_animation_state {
-    lv_obj_t *bubble_image;
-    uint8_t frame_index;
-};
-
-struct scene_cycle_state {
-    lv_obj_t *fish_image;
-    lv_obj_t *bubble_image;
-    lv_obj_t *panel_box;
-    lv_obj_t *panel_title;
-    lv_obj_t *panel_line1;
-    lv_obj_t *panel_line2;
-    uint8_t scene_index;
+struct lily58_oled_state {
+    lv_obj_t *status_root;
+    lv_obj_t *anim_root;
+    lv_obj_t *matrix_image;
+    lv_obj_t *output_label;
+    lv_obj_t *battery_label;
+    lv_obj_t *layer_label;
+    lv_obj_t *wpm_label;
     bool right_half;
+    bool show_status;
+    uint8_t matrix_frame_index;
 };
 
-static const lv_img_dsc_t *const bubble_frames[] = {
-    &lily58_bubbles_0,
-    &lily58_bubbles_1,
-    &lily58_bubbles_2,
+static const lv_img_dsc_t *const matrix_frames[] = {
+    &lily58_matrix_0,
+    &lily58_matrix_1,
+    &lily58_matrix_2,
+    &lily58_matrix_3,
 };
 
-static const struct scene_config left_scenes[] = {
-    {.fish_art = &lily58_fish_left, .fish_x = 0, .fish_y = 4, .bubble_x = 48, .bubble_y = 0},
-    {.fish_art = &lily58_fish_left_alt, .fish_x = 14, .fish_y = 8, .bubble_x = 38, .bubble_y = 2},
-    {.fish_art = &lily58_fish_left_alt, .fish_x = 22, .fish_y = 6, .bubble_x = 46, .bubble_y = 5},
-};
+static struct lily58_oled_state oled_state;
+static lv_timer_t *status_timer;
+static lv_timer_t *matrix_timer;
+static lv_timer_t *mode_timer;
 
-static const struct scene_config right_scenes[] = {
-    {.fish_art = &lily58_fish_right, .fish_x = 64, .fish_y = 4, .bubble_x = 40, .bubble_y = 0},
-    {.fish_art = &lily58_fish_right_alt, .fish_x = 82, .fish_y = 8, .bubble_x = 74, .bubble_y = 2},
-    {.fish_art = &lily58_fish_right_alt, .fish_x = 74, .fish_y = 6, .bubble_x = 66, .bubble_y = 5},
-};
+static lv_obj_t *create_root(lv_obj_t *parent) {
+    lv_obj_t *root = lv_obj_create(parent);
 
-static struct bubble_animation_state bubble_animation_state;
-static struct scene_cycle_state scene_cycle_state;
-static lv_timer_t *bubble_timer;
-static lv_timer_t *scene_timer;
+    lv_obj_set_size(root, 128, 32);
+    lv_obj_set_pos(root, 0, 0);
+    lv_obj_clear_flag(root, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_border_width(root, 0, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(root, 0, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(root, LV_OPA_TRANSP, LV_PART_MAIN);
 
-static lv_obj_t *create_panel_box(lv_obj_t *parent, lv_coord_t x, lv_coord_t y) {
-    lv_obj_t *box = lv_obj_create(parent);
-
-    lv_obj_set_size(box, 48, 24);
-    lv_obj_set_pos(box, x, y);
-    lv_obj_clear_flag(box, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_style_bg_opa(box, LV_OPA_TRANSP, LV_PART_MAIN);
-    lv_obj_set_style_border_width(box, 1, LV_PART_MAIN);
-    lv_obj_set_style_border_color(box, lv_color_white(), LV_PART_MAIN);
-    lv_obj_set_style_radius(box, 0, LV_PART_MAIN);
-    lv_obj_set_style_pad_all(box, 1, LV_PART_MAIN);
-
-    return box;
+    return root;
 }
 
-static lv_obj_t *create_panel_label(lv_obj_t *parent, const char *text, lv_coord_t x, lv_coord_t y) {
+static lv_obj_t *create_status_label(lv_obj_t *parent, lv_coord_t x, lv_coord_t y, lv_coord_t width,
+                                     lv_text_align_t align) {
     lv_obj_t *label = lv_label_create(parent);
 
-    lv_label_set_text(label, text);
-    lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_width(label, width);
     lv_obj_set_pos(label, x, y);
+    lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_text_align(label, align, LV_PART_MAIN);
+    lv_label_set_text(label, "");
 
     return label;
 }
 
-static void set_panel_hidden(struct scene_cycle_state *state, bool hidden) {
-    if (hidden) {
-        lv_obj_add_flag(state->panel_box, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(state->panel_title, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(state->panel_line1, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_add_flag(state->panel_line2, LV_OBJ_FLAG_HIDDEN);
+static void set_mode(struct lily58_oled_state *state, bool show_status) {
+    state->show_status = show_status;
+
+    if (show_status) {
+        lv_obj_clear_flag(state->status_root, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(state->anim_root, LV_OBJ_FLAG_HIDDEN);
     } else {
-        lv_obj_clear_flag(state->panel_box, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(state->panel_title, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(state->panel_line1, LV_OBJ_FLAG_HIDDEN);
-        lv_obj_clear_flag(state->panel_line2, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(state->status_root, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_clear_flag(state->anim_root, LV_OBJ_FLAG_HIDDEN);
     }
 }
 
-static void update_panel(struct scene_cycle_state *state) {
-    bool compact_scene = state->scene_index != 0;
-    lv_coord_t panel_x = state->right_half ? 4 : 76;
+static void update_battery_label(struct lily58_oled_state *state) {
+    char text[8] = {};
+    uint8_t level = bt_gatt_bas_get_battery_level();
 
-    set_panel_hidden(state, !compact_scene);
-    if (!compact_scene) {
+#if IS_ENABLED(CONFIG_USB)
+    if (zmk_usb_is_powered()) {
+        strcat(text, LV_SYMBOL_CHARGE);
+    }
+#endif
+
+    if (level > 95) {
+        strcat(text, LV_SYMBOL_BATTERY_FULL);
+    } else if (level > 65) {
+        strcat(text, LV_SYMBOL_BATTERY_3);
+    } else if (level > 35) {
+        strcat(text, LV_SYMBOL_BATTERY_2);
+    } else if (level > 5) {
+        strcat(text, LV_SYMBOL_BATTERY_1);
+    } else {
+        strcat(text, LV_SYMBOL_BATTERY_EMPTY);
+    }
+
+    lv_label_set_text(state->battery_label, text);
+}
+
+static void update_output_label(struct lily58_oled_state *state) {
+    char text[18] = {};
+
+    if (state->right_half) {
+        lv_label_set_text(state->output_label, "PERIPH");
         return;
     }
 
-    lv_obj_set_pos(state->panel_box, panel_x, 4);
-    lv_obj_set_pos(state->panel_title, panel_x + 4, 5);
-    lv_obj_set_pos(state->panel_line1, panel_x + 4, 12);
-    lv_obj_set_pos(state->panel_line2, panel_x + 4, 19);
-
-    lv_label_set_text(state->panel_title, state->right_half ? "RIGHT" : "LEFT");
-    if (state->scene_index == 1) {
-        lv_label_set_text(state->panel_line1, "FISH");
-        lv_label_set_text(state->panel_line2, "MINI");
-    } else {
-        lv_label_set_text(state->panel_line1, "BUB");
-        lv_label_set_text(state->panel_line2, "FLOW");
+    switch (zmk_endpoints_selected()) {
+    case ZMK_ENDPOINT_USB:
+        snprintf(text, sizeof(text), LV_SYMBOL_USB);
+        break;
+    case ZMK_ENDPOINT_BLE:
+        if (!zmk_ble_active_profile_is_open()) {
+            snprintf(text, sizeof(text), LV_SYMBOL_WIFI "%u %s", zmk_ble_active_profile_index(),
+                     zmk_ble_active_profile_is_connected() ? LV_SYMBOL_OK : LV_SYMBOL_CLOSE);
+        } else {
+            snprintf(text, sizeof(text), LV_SYMBOL_WIFI "%u %s", zmk_ble_active_profile_index(),
+                     LV_SYMBOL_SETTINGS);
+        }
+        break;
+    default:
+        snprintf(text, sizeof(text), "?");
+        break;
     }
+
+    lv_label_set_text(state->output_label, text);
 }
 
-static void bubble_tick_cb(lv_timer_t *timer) {
-    struct bubble_animation_state *state = timer->user_data;
+static void update_layer_label(struct lily58_oled_state *state) {
+    char text[20] = {};
 
-    state->frame_index = (state->frame_index + 1) % ARRAY_SIZE(bubble_frames);
-    lv_img_set_src(state->bubble_image, bubble_frames[state->frame_index]);
+    if (state->right_half) {
+        lv_label_set_text(state->layer_label, "RIGHT");
+        return;
+    }
+
+    uint8_t active_layer = zmk_keymap_highest_layer_active();
+    const char *label = zmk_keymap_layer_label(active_layer);
+
+    if (label != NULL && label[0] != '\0') {
+        snprintf(text, sizeof(text), LV_SYMBOL_KEYBOARD "%.5s", label);
+    } else {
+        snprintf(text, sizeof(text), LV_SYMBOL_KEYBOARD "%u", active_layer);
+    }
+
+    lv_label_set_text(state->layer_label, text);
 }
 
-static void scene_tick_cb(lv_timer_t *timer) {
-    struct scene_cycle_state *state = timer->user_data;
-    const struct scene_config *scenes = state->right_half ? right_scenes : left_scenes;
-    const struct scene_config *scene;
+static void update_wpm_label(struct lily58_oled_state *state) {
+    char text[12] = {};
 
-    state->scene_index = (state->scene_index + 1) % ARRAY_SIZE(left_scenes);
-    scene = &scenes[state->scene_index];
+    if (state->right_half) {
+        lv_label_set_text(state->wpm_label, "SPLIT");
+        return;
+    }
 
-    lv_img_set_src(state->fish_image, scene->fish_art);
-    lv_obj_set_pos(state->fish_image, scene->fish_x, scene->fish_y);
-    lv_obj_set_pos(state->bubble_image, scene->bubble_x, scene->bubble_y);
-    update_panel(state);
+    snprintf(text, sizeof(text), "%u", zmk_wpm_get_state());
+    lv_label_set_text(state->wpm_label, text);
+}
+
+static void refresh_status(struct lily58_oled_state *state) {
+    update_output_label(state);
+    update_battery_label(state);
+    update_layer_label(state);
+    update_wpm_label(state);
+}
+
+static void status_tick_cb(lv_timer_t *timer) {
+    refresh_status(timer->user_data);
+}
+
+static void matrix_tick_cb(lv_timer_t *timer) {
+    struct lily58_oled_state *state = timer->user_data;
+
+    state->matrix_frame_index = (state->matrix_frame_index + 1) % ARRAY_SIZE(matrix_frames);
+    lv_img_set_src(state->matrix_image, matrix_frames[state->matrix_frame_index]);
+}
+
+static void mode_tick_cb(lv_timer_t *timer) {
+    struct lily58_oled_state *state = timer->user_data;
+
+    set_mode(state, !state->show_status);
 }
 
 lv_obj_t *zmk_display_status_screen(void) {
     lv_obj_t *screen = lv_obj_create(NULL);
-    lv_obj_t *fish_image;
-    lv_obj_t *bubble_image;
-    const struct scene_config *scenes;
-    const struct scene_config *scene;
-    bool right_half = IS_ENABLED(LILY58_OLED_ART_RIGHT);
 
     lv_obj_set_size(screen, 128, 32);
     lv_obj_clear_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
@@ -164,40 +209,40 @@ lv_obj_t *zmk_display_status_screen(void) {
     lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
 
-    scenes = right_half ? right_scenes : left_scenes;
-    scene = &scenes[0];
+    memset(&oled_state, 0, sizeof(oled_state));
+    oled_state.right_half = IS_ENABLED(LILY58_OLED_ART_RIGHT);
+    oled_state.show_status = true;
 
-    fish_image = lv_img_create(screen);
-    lv_img_set_src(fish_image, scene->fish_art);
-    lv_obj_set_pos(fish_image, scene->fish_x, scene->fish_y);
+    oled_state.status_root = create_root(screen);
+    oled_state.anim_root = create_root(screen);
+    oled_state.matrix_image = lv_img_create(oled_state.anim_root);
+    lv_img_set_src(oled_state.matrix_image, matrix_frames[0]);
+    lv_obj_set_pos(oled_state.matrix_image, 0, 0);
 
-    bubble_image = lv_img_create(screen);
-    lv_img_set_src(bubble_image, bubble_frames[0]);
-    lv_obj_set_pos(bubble_image, scene->bubble_x, scene->bubble_y);
+    oled_state.output_label = create_status_label(oled_state.status_root, 0, 0, 80, LV_TEXT_ALIGN_LEFT);
+    oled_state.battery_label =
+        create_status_label(oled_state.status_root, 94, 0, 34, LV_TEXT_ALIGN_RIGHT);
+    oled_state.layer_label = create_status_label(oled_state.status_root, 0, 20, 92, LV_TEXT_ALIGN_LEFT);
+    oled_state.wpm_label = create_status_label(oled_state.status_root, 96, 20, 32, LV_TEXT_ALIGN_RIGHT);
 
-    bubble_animation_state.bubble_image = bubble_image;
-    bubble_animation_state.frame_index = 0;
-    scene_cycle_state.fish_image = fish_image;
-    scene_cycle_state.bubble_image = bubble_image;
-    scene_cycle_state.panel_box = create_panel_box(screen, right_half ? 4 : 76, 4);
-    scene_cycle_state.panel_title = create_panel_label(screen, "", 0, 0);
-    scene_cycle_state.panel_line1 = create_panel_label(screen, "", 0, 0);
-    scene_cycle_state.panel_line2 = create_panel_label(screen, "", 0, 0);
-    scene_cycle_state.scene_index = 0;
-    scene_cycle_state.right_half = right_half;
-    update_panel(&scene_cycle_state);
+    refresh_status(&oled_state);
+    set_mode(&oled_state, true);
 
-    if (bubble_timer != NULL) {
-        lv_timer_del(bubble_timer);
+    if (status_timer != NULL) {
+        lv_timer_del(status_timer);
     }
 
-    bubble_timer = lv_timer_create(bubble_tick_cb, 500, &bubble_animation_state);
-
-    if (scene_timer != NULL) {
-        lv_timer_del(scene_timer);
+    if (matrix_timer != NULL) {
+        lv_timer_del(matrix_timer);
     }
 
-    scene_timer = lv_timer_create(scene_tick_cb, 6000, &scene_cycle_state);
+    if (mode_timer != NULL) {
+        lv_timer_del(mode_timer);
+    }
+
+    status_timer = lv_timer_create(status_tick_cb, 1000, &oled_state);
+    matrix_timer = lv_timer_create(matrix_tick_cb, 140, &oled_state);
+    mode_timer = lv_timer_create(mode_tick_cb, 8000, &oled_state);
 
     return screen;
 }
