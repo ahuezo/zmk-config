@@ -1,0 +1,5 @@
+/ {
+    lily58_oled_art: lily58_oled_art {
+        variant = <0>;
+    };
+};

@@ -1,3 +1,5 @@
+name: zmk-vfx-lily58-oled
 build:
+  cmake: .
   settings:
     board_root: .

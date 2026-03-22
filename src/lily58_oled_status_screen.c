@@ -1,0 +1,110 @@
+/*
+ * Copyright (c) 2026
+ *
+ * SPDX-License-Identifier: MIT
+ */
+
+#include <zmk/display/status_screen.h>
+#include <zmk/display/widgets/battery_status.h>
+#include <zmk/display/widgets/layer_status.h>
+
+#include <lvgl.h>
+#include <zephyr/devicetree.h>
+#include <zephyr/logging/log.h>
+#include <zephyr/sys/util.h>
+
+LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
+
+#define OLED_ART_NODE DT_NODELABEL(lily58_oled_art)
+#define OLED_ART_VARIANT_LEFT 0
+#define OLED_ART_VARIANT_RIGHT 1
+
+LV_IMG_DECLARE(lily58_fish_left);
+LV_IMG_DECLARE(lily58_fish_right);
+LV_IMG_DECLARE(lily58_bubbles_0);
+LV_IMG_DECLARE(lily58_bubbles_1);
+LV_IMG_DECLARE(lily58_bubbles_2);
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_BATTERY_STATUS)
+static struct zmk_widget_battery_status battery_status_widget;
+#endif
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_LAYER_STATUS)
+static struct zmk_widget_layer_status layer_status_widget;
+#endif
+
+struct bubble_animation_state {
+    lv_obj_t *bubble_image;
+    uint8_t frame_index;
+};
+
+static const lv_img_dsc_t *const bubble_frames[] = {
+    &lily58_bubbles_0,
+    &lily58_bubbles_1,
+    &lily58_bubbles_2,
+};
+
+static struct bubble_animation_state bubble_animation_state;
+static lv_timer_t *bubble_timer;
+
+static void style_monochrome_image(lv_obj_t *img) {
+    lv_obj_set_style_img_recolor(img, lv_color_white(), LV_PART_MAIN);
+    lv_obj_set_style_img_recolor_opa(img, LV_OPA_COVER, LV_PART_MAIN);
+}
+
+static void bubble_tick_cb(lv_timer_t *timer) {
+    struct bubble_animation_state *state = timer->user_data;
+
+    state->frame_index = (state->frame_index + 1) % ARRAY_SIZE(bubble_frames);
+    lv_img_set_src(state->bubble_image, bubble_frames[state->frame_index]);
+}
+
+lv_obj_t *zmk_display_status_screen(void) {
+    lv_obj_t *screen = lv_obj_create(NULL);
+    lv_obj_t *fish_image;
+    lv_obj_t *bubble_image;
+    const lv_img_dsc_t *fish_art;
+    uint32_t art_variant = DT_PROP(OLED_ART_NODE, variant);
+
+    lv_obj_set_size(screen, 128, 32);
+    lv_obj_clear_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_border_width(screen, 0, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(screen, 0, LV_PART_MAIN);
+
+    fish_art = (art_variant == OLED_ART_VARIANT_RIGHT) ? &lily58_fish_right : &lily58_fish_left;
+
+    fish_image = lv_img_create(screen);
+    lv_img_set_src(fish_image, fish_art);
+    style_monochrome_image(fish_image);
+    lv_obj_set_pos(fish_image, art_variant == OLED_ART_VARIANT_RIGHT ? 64 : 0, 4);
+
+    bubble_image = lv_img_create(screen);
+    lv_img_set_src(bubble_image, bubble_frames[0]);
+    style_monochrome_image(bubble_image);
+    lv_obj_set_pos(bubble_image, art_variant == OLED_ART_VARIANT_RIGHT ? 40 : 48, 0);
+
+    bubble_animation_state.bubble_image = bubble_image;
+    bubble_animation_state.frame_index = 0;
+
+    if (bubble_timer != NULL) {
+        lv_timer_del(bubble_timer);
+    }
+
+    bubble_timer = lv_timer_create(bubble_tick_cb, 500, &bubble_animation_state);
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_BATTERY_STATUS)
+    zmk_widget_battery_status_init(&battery_status_widget, screen);
+    lv_obj_align(zmk_widget_battery_status_obj(&battery_status_widget),
+                 art_variant == OLED_ART_VARIANT_RIGHT ? LV_ALIGN_TOP_LEFT : LV_ALIGN_TOP_RIGHT, 0, 0);
+#endif
+
+#if IS_ENABLED(CONFIG_ZMK_WIDGET_LAYER_STATUS)
+    zmk_widget_layer_status_init(&layer_status_widget, screen);
+    lv_obj_set_style_text_font(zmk_widget_layer_status_obj(&layer_status_widget),
+                               lv_theme_get_font_small(screen), LV_PART_MAIN);
+    lv_obj_set_pos(zmk_widget_layer_status_obj(&layer_status_widget),
+                   art_variant == OLED_ART_VARIANT_RIGHT ? 8 : 72, 18);
+#endif
+
+    return screen;
+}
