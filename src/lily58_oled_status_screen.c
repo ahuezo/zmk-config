@@ -13,10 +13,7 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/util.h>
 
-#include <zmk/ble.h>
-#include <zmk/keymap.h>
 #include <zmk/usb.h>
-#include <zmk/wpm.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
@@ -121,54 +118,34 @@ static void update_output_label(struct lily58_oled_state *state) {
         return;
     }
 
-    if (!zmk_ble_active_profile_is_open()) {
-        snprintf(text, sizeof(text), LV_SYMBOL_WIFI "%u %s", zmk_ble_active_profile_index(),
-                 zmk_ble_active_profile_is_connected() ? LV_SYMBOL_OK : LV_SYMBOL_CLOSE);
-    } else {
 #if IS_ENABLED(CONFIG_USB)
-        if (zmk_usb_is_powered()) {
-            snprintf(text, sizeof(text), LV_SYMBOL_USB);
-        } else
+    if (zmk_usb_is_powered()) {
+        snprintf(text, sizeof(text), LV_SYMBOL_USB " USB");
+    } else
 #endif
-        {
-            snprintf(text, sizeof(text), LV_SYMBOL_WIFI "%u %s", zmk_ble_active_profile_index(),
-                     LV_SYMBOL_SETTINGS);
-        }
+    {
+        snprintf(text, sizeof(text), LV_SYMBOL_WIFI " BLE");
     }
 
     lv_label_set_text(state->output_label, text);
 }
 
 static void update_layer_label(struct lily58_oled_state *state) {
-    char text[20] = {};
-
     if (state->right_half) {
         lv_label_set_text(state->layer_label, "RIGHT");
         return;
     }
 
-    uint8_t active_layer = zmk_keymap_highest_layer_active();
-    const char *label = zmk_keymap_layer_label(active_layer);
-
-    if (label != NULL && label[0] != '\0') {
-        snprintf(text, sizeof(text), LV_SYMBOL_KEYBOARD "%.5s", label);
-    } else {
-        snprintf(text, sizeof(text), LV_SYMBOL_KEYBOARD "%u", active_layer);
-    }
-
-    lv_label_set_text(state->layer_label, text);
+    lv_label_set_text(state->layer_label, LV_SYMBOL_KEYBOARD " READY");
 }
 
 static void update_wpm_label(struct lily58_oled_state *state) {
-    char text[12] = {};
-
     if (state->right_half) {
         lv_label_set_text(state->wpm_label, "SPLIT");
         return;
     }
 
-    snprintf(text, sizeof(text), "%u", zmk_wpm_get_state());
-    lv_label_set_text(state->wpm_label, text);
+    lv_label_set_text(state->wpm_label, "MTRX");
 }
 
 static void refresh_status(struct lily58_oled_state *state) {
