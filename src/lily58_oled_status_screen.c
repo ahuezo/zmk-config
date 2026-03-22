@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: MIT
  */
 
-#include <zmk/display/status_screen.h>
 #include <zmk/display/widgets/battery_status.h>
 #include <zmk/display/widgets/layer_status.h>
 
