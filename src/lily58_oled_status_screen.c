@@ -10,9 +10,6 @@
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
-LV_FONT_DECLARE(lv_font_montserrat_10);
-LV_FONT_DECLARE(lv_font_montserrat_14);
-
 LV_IMG_DECLARE(lily58_fish_left);
 LV_IMG_DECLARE(lily58_fish_right);
 LV_IMG_DECLARE(lily58_bubbles_0);
@@ -50,13 +47,12 @@ static void style_page(lv_obj_t *page) {
     lv_obj_set_style_pad_all(page, 0, LV_PART_MAIN);
 }
 
-static lv_obj_t *create_label(lv_obj_t *parent, const char *text, const lv_font_t *font, lv_coord_t x,
-                              lv_coord_t y, lv_text_align_t align) {
+static lv_obj_t *create_label(lv_obj_t *parent, const char *text, lv_coord_t x, lv_coord_t y,
+                              lv_text_align_t align) {
     lv_obj_t *label = lv_label_create(parent);
 
     lv_label_set_text(label, text);
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
-    lv_obj_set_style_text_font(label, font, LV_PART_MAIN);
     lv_obj_set_style_text_align(label, align, LV_PART_MAIN);
     lv_obj_set_pos(label, x, y);
 
@@ -116,9 +112,9 @@ static lv_obj_t *create_mixed_page(lv_obj_t *parent, const lv_img_dsc_t *fish_ar
     lv_obj_set_pos(bubble_image, right_half ? 34 : 54, 0);
 
     info_box = create_box(page, right_half ? 4 : 74, 3, 50, 26);
-    create_label(info_box, right_half ? "RIGHT" : "LEFT", &lv_font_montserrat_10, 2, 0, LV_TEXT_ALIGN_LEFT);
-    create_label(info_box, "LILY58", &lv_font_montserrat_14, 2, 10, LV_TEXT_ALIGN_LEFT);
-    create_label(info_box, "FISH", &lv_font_montserrat_10, 2, 20, LV_TEXT_ALIGN_LEFT);
+    create_label(info_box, right_half ? "RIGHT" : "LEFT", 2, 0, LV_TEXT_ALIGN_LEFT);
+    create_label(info_box, "LILY58", 2, 10, LV_TEXT_ALIGN_LEFT);
+    create_label(info_box, "FISH", 2, 20, LV_TEXT_ALIGN_LEFT);
 
     *bubble_out = bubble_image;
     return page;
@@ -133,15 +129,14 @@ static lv_obj_t *create_status_page(lv_obj_t *parent, bool right_half) {
     style_page(page);
 
     title_box = create_box(page, 4, 3, 120, 10);
-    create_label(title_box, right_half ? "OLED STATUS / RIGHT HALF" : "OLED STATUS / LEFT HALF",
-                 &lv_font_montserrat_10, 2, -1, LV_TEXT_ALIGN_LEFT);
+    create_label(title_box, right_half ? "OLED STATUS / RIGHT HALF" : "OLED STATUS / LEFT HALF", 2, -1,
+                 LV_TEXT_ALIGN_LEFT);
 
     line1_box = create_box(page, 4, 16, 58, 12);
-    create_label(line1_box, "ANIM  FISH+BUB", &lv_font_montserrat_10, 2, 0, LV_TEXT_ALIGN_LEFT);
+    create_label(line1_box, "ANIM  FISH+BUB", 2, 0, LV_TEXT_ALIGN_LEFT);
 
     line2_box = create_box(page, 66, 16, 58, 12);
-    create_label(line2_box, right_half ? "MODE  PERIPH" : "MODE  CENTRAL", &lv_font_montserrat_10, 2, 0,
-                 LV_TEXT_ALIGN_LEFT);
+    create_label(line2_box, right_half ? "MODE  PERIPH" : "MODE  CENTRAL", 2, 0, LV_TEXT_ALIGN_LEFT);
     return page;
 }
 
