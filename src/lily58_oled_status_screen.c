@@ -5,15 +5,10 @@
  */
 
 #include <lvgl.h>
-#include <zephyr/devicetree.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/sys/util.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
-
-#define OLED_ART_NODE DT_NODELABEL(lily58_oled_art)
-#define OLED_ART_VARIANT_LEFT 0
-#define OLED_ART_VARIANT_RIGHT 1
 
 LV_IMG_DECLARE(lily58_fish_left);
 LV_IMG_DECLARE(lily58_fish_right);
@@ -52,24 +47,24 @@ lv_obj_t *zmk_display_status_screen(void) {
     lv_obj_t *fish_image;
     lv_obj_t *bubble_image;
     const lv_img_dsc_t *fish_art;
-    uint32_t art_variant = DT_PROP(OLED_ART_NODE, variant);
+    bool right_half = IS_ENABLED(LILY58_OLED_ART_RIGHT);
 
     lv_obj_set_size(screen, 128, 32);
     lv_obj_clear_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_border_width(screen, 0, LV_PART_MAIN);
     lv_obj_set_style_pad_all(screen, 0, LV_PART_MAIN);
 
-    fish_art = (art_variant == OLED_ART_VARIANT_RIGHT) ? &lily58_fish_right : &lily58_fish_left;
+    fish_art = right_half ? &lily58_fish_right : &lily58_fish_left;
 
     fish_image = lv_img_create(screen);
     lv_img_set_src(fish_image, fish_art);
     style_monochrome_image(fish_image);
-    lv_obj_set_pos(fish_image, art_variant == OLED_ART_VARIANT_RIGHT ? 64 : 0, 4);
+    lv_obj_set_pos(fish_image, right_half ? 64 : 0, 4);
 
     bubble_image = lv_img_create(screen);
     lv_img_set_src(bubble_image, bubble_frames[0]);
     style_monochrome_image(bubble_image);
-    lv_obj_set_pos(bubble_image, art_variant == OLED_ART_VARIANT_RIGHT ? 40 : 48, 0);
+    lv_obj_set_pos(bubble_image, right_half ? 40 : 48, 0);
 
     bubble_animation_state.bubble_image = bubble_image;
     bubble_animation_state.frame_index = 0;
