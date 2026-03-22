@@ -22,10 +22,22 @@ include:
   - board: nice_nano_v2
     shield: lily58_left
     snippet: studio-rpc-usb-uart
-    cmake-args: -DCONFIG_ZMK_STUDIO=y
+    cmake-args: -DCONFIG_ZMK_STUDIO=y -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_BUILT_IN=y -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=n
+    artifact-name: lily58_left_status
   - board: nice_nano_v2
     shield: lily58_right
     snippet: studio-rpc-usb-uart
-    cmake-args: -DCONFIG_ZMK_STUDIO=y
+    cmake-args: -DCONFIG_ZMK_STUDIO=y -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_BUILT_IN=y -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=n
+    artifact-name: lily58_right_status
+  - board: nice_nano_v2
+    shield: lily58_left
+    snippet: studio-rpc-usb-uart
+    cmake-args: -DCONFIG_ZMK_STUDIO=y -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_BUILT_IN=n -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
+    artifact-name: lily58_left_matrix
+  - board: nice_nano_v2
+    shield: lily58_right
+    snippet: studio-rpc-usb-uart
+    cmake-args: -DCONFIG_ZMK_STUDIO=y -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_BUILT_IN=n -DCONFIG_ZMK_DISPLAY_STATUS_SCREEN_CUSTOM=y
+    artifact-name: lily58_right_matrix
   - board: nice_nano_v2
     shield: settings_reset
