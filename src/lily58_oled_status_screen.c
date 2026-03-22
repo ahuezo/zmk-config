@@ -30,11 +30,6 @@ static const lv_img_dsc_t *const bubble_frames[] = {
 static struct bubble_animation_state bubble_animation_state;
 static lv_timer_t *bubble_timer;
 
-static void style_monochrome_image(lv_obj_t *img) {
-    lv_obj_set_style_img_recolor(img, lv_color_white(), LV_PART_MAIN);
-    lv_obj_set_style_img_recolor_opa(img, LV_OPA_COVER, LV_PART_MAIN);
-}
-
 static void bubble_tick_cb(lv_timer_t *timer) {
     struct bubble_animation_state *state = timer->user_data;
 
@@ -53,17 +48,17 @@ lv_obj_t *zmk_display_status_screen(void) {
     lv_obj_clear_flag(screen, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_border_width(screen, 0, LV_PART_MAIN);
     lv_obj_set_style_pad_all(screen, 0, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(screen, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, LV_PART_MAIN);
 
     fish_art = right_half ? &lily58_fish_right : &lily58_fish_left;
 
     fish_image = lv_img_create(screen);
     lv_img_set_src(fish_image, fish_art);
-    style_monochrome_image(fish_image);
     lv_obj_set_pos(fish_image, right_half ? 64 : 0, 4);
 
     bubble_image = lv_img_create(screen);
     lv_img_set_src(bubble_image, bubble_frames[0]);
-    style_monochrome_image(bubble_image);
     lv_obj_set_pos(bubble_image, right_half ? 40 : 48, 0);
 
     bubble_animation_state.bubble_image = bubble_image;

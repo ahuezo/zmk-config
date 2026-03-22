@@ -1,6 +1,8 @@
 #include <lvgl.h>
 
 static const uint8_t lily58_fish_left_map[] = {
+    0x00, 0x00, 0x00, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x80,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0D, 0x80,
@@ -28,6 +30,8 @@ static const uint8_t lily58_fish_left_map[] = {
 };
 
 static const uint8_t lily58_fish_right_map[] = {
+    0x00, 0x00, 0x00, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x01, 0xE0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x01, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -55,6 +59,8 @@ static const uint8_t lily58_fish_right_map[] = {
 };
 
 static const uint8_t lily58_bubbles_0_map[] = {
+    0x00, 0x00, 0x00, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
     0x00, 0x00, 0x03, 0x00,
     0x04, 0x80, 0x04, 0x80,
     0x03, 0x00, 0x00, 0x00,
@@ -64,6 +70,8 @@ static const uint8_t lily58_bubbles_0_map[] = {
 };
 
 static const uint8_t lily58_bubbles_1_map[] = {
+    0x00, 0x00, 0x00, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
     0x03, 0x00, 0x04, 0x80,
     0x04, 0x80, 0x03, 0x00,
     0x00, 0x00, 0x00, 0x30,
@@ -73,6 +81,8 @@ static const uint8_t lily58_bubbles_1_map[] = {
 };
 
 static const uint8_t lily58_bubbles_2_map[] = {
+    0x00, 0x00, 0x00, 0xFF,
+    0xFF, 0xFF, 0xFF, 0xFF,
     0x0C, 0x00, 0x0C, 0x00,
     0x00, 0x00, 0x00, 0xC0,
     0x01, 0x20, 0x01, 0x20,
@@ -85,7 +95,7 @@ const lv_img_dsc_t lily58_fish_left = {
     .header.always_zero = 0,
     .header.w = 64,
     .header.h = 24,
-    .header.cf = LV_IMG_CF_ALPHA_1BIT,
+    .header.cf = LV_IMG_CF_INDEXED_1BIT,
     .data_size = sizeof(lily58_fish_left_map),
     .data = lily58_fish_left_map,
 };
@@ -94,7 +104,7 @@ const lv_img_dsc_t lily58_fish_right = {
     .header.always_zero = 0,
     .header.w = 64,
     .header.h = 24,
-    .header.cf = LV_IMG_CF_ALPHA_1BIT,
+    .header.cf = LV_IMG_CF_INDEXED_1BIT,
     .data_size = sizeof(lily58_fish_right_map),
     .data = lily58_fish_right_map,
 };
@@ -103,7 +113,7 @@ const lv_img_dsc_t lily58_bubbles_0 = {
     .header.always_zero = 0,
     .header.w = 16,
     .header.h = 12,
-    .header.cf = LV_IMG_CF_ALPHA_1BIT,
+    .header.cf = LV_IMG_CF_INDEXED_1BIT,
     .data_size = sizeof(lily58_bubbles_0_map),
     .data = lily58_bubbles_0_map,
 };
@@ -112,7 +122,7 @@ const lv_img_dsc_t lily58_bubbles_1 = {
     .header.always_zero = 0,
     .header.w = 16,
     .header.h = 12,
-    .header.cf = LV_IMG_CF_ALPHA_1BIT,
+    .header.cf = LV_IMG_CF_INDEXED_1BIT,
     .data_size = sizeof(lily58_bubbles_1_map),
     .data = lily58_bubbles_1_map,
 };
@@ -121,7 +131,7 @@ const lv_img_dsc_t lily58_bubbles_2 = {
     .header.always_zero = 0,
     .header.w = 16,
     .header.h = 12,
-    .header.cf = LV_IMG_CF_ALPHA_1BIT,
+    .header.cf = LV_IMG_CF_INDEXED_1BIT,
     .data_size = sizeof(lily58_bubbles_2_map),
     .data = lily58_bubbles_2_map,
 };
