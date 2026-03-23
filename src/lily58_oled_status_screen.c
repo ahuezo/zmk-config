@@ -59,7 +59,7 @@ lv_obj_t *zmk_display_status_screen(void) {
         lv_timer_del(matrix_timer);
     }
 
-    matrix_timer = lv_timer_create(matrix_tick_cb, 140, &matrix_animation_state);
+    matrix_timer = lv_timer_create(matrix_tick_cb, 280, &matrix_animation_state);
 
     return screen;
 }
