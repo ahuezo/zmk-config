@@ -356,13 +356,13 @@
 // | TAB  |  Q  |  W  |  E   |  R    |  T   |                   |  Y   |  U    |  I    |  O   |   P   |   -    |
 // | SHFT |  A  |  S  |  D   |  F    |  G   |                   |  H   |  J    |  K    |  L   |   ;   |   '    |
 // | LCTL |  Z  |  X  |  C   |  V    |  B   |  HOME  |  |  END  |  N   |  M    |  ,    |  .   |   /   | SHIFT  |
-//                    | GUI  | LOWER | LALT |  SPACE |  | SPACE | RALT | RAISE | RCTL  |
+//                    | GUI  | LOWER | LALT |  SPACE |  | SPACE | RGUI | RAISE | RALT  |
             bindings = <
 &kp ESC   &kp N1 &kp N2 &kp N3   &kp N4   &kp N5                         &kp N6   &kp N7  &kp N8    &kp N9  &kp N0   &kp BSPC
 &kp TAB   &kp Q  &kp W  &kp E    &kp R    &kp T                          &kp Y    &kp U   &kp I     &kp O   &kp P    &kp MINUS
 &kp LSHFT &kp A  &kp S  &kp D    &kp F    &kp G                          &kp H    &kp J   &kp K     &kp L   &kp SEMI &kp SQT
 &kp LCTRL &kp Z  &kp X  &kp C    &kp V    &kp B     &kp HOME   &kp END   &kp N    &kp M   &kp COMMA &kp DOT &kp FSLH &kp RBKT
-                        &kp LGUI &mo 1    &kp LALT  &kp SPACE  &kp SPACE &kp RALT &mo 2   &kp RCTL
+                        &kp LGUI &mo 1    &kp LALT  &kp SPACE  &kp SPACE &kp RGUI &mo 2   &kp RALT
             >;
 
             sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
@@ -390,13 +390,13 @@
 // ------------------------------------------------------------------------------------------------------------
 // |       |  !  |     |      |      |      |                   |      |       |       |      |       |   DEL  |
 // |       |     |     |      |      |      |                   |      |       |       |      |       |   ?    |
-// |       |     |     |      |      |      |                   |      |       |       |      |       |   }    |
-// |       |     |     |      |      |      |        |  |       |      |       |       |   <  |   >   |   [    |
+// |       |     |     |      |      |      |                   | CmdL | CmdD  | CmdU  | CmdR |       |   }    |
+// |       |     |     |      |      |      |        |  |       | OptL |       |       | OptR |   <   |   [    |
             bindings = <
 &kp ES_BACKSLASH &kp ES_IEXCL &none   &none   &none   &none                      &none    &none     &none   &none      &none     &kp DEL
 &none            &none        &none   &none   &none   &none                      &none    &none     &none   &none      &none     &kp ES_IQMARK
-&none            &none        &none   &none   &none   &none 	                   &kp LEFT &kp DOWN  &kp UP  &kp RIGHT  &none     &kp RA(BSLH)
-&none            &none        &none   &none   &none   &none   &trans   &trans    &none    &none     &none   &none      &kp ES_LT &kp RA(LBKT) 
+&none            &none        &none   &none   &none   &none 	                   &kp LG(LEFT) &kp LG(DOWN)  &kp LG(UP)  &kp LG(RIGHT)  &none     &kp RA(BSLH)
+&none            &none        &none   &none   &none   &none   &trans   &trans    &kp LA(LEFT) &none         &none       &kp LA(RIGHT) &kp ES_LT &kp RA(LBKT)
                                       &trans  &trans  &trans  &trans   &kp RET   &trans   &trans    &kp RET
             >;
 
