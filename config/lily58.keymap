@@ -370,17 +370,17 @@
 
         lower_layer {
 // ------------------------------------------------------------------------------------------------------------
-// | BTCLR | BT1 | BT2 |  BT3 |  BT4 |  BT5 |                   |      |      |      |      |     |     |
-// |  F1   | F2  | F3  |  F4  |  F5  |  F6  |                   |  F7  |  F8  |  F9  |  F10 | F11 | F12 |
-// | RGBTOG| RGB- | RGB+| PREV | NEXT |      |                   |      |      |      |      |     |     |
-// |       | HUE- | HUE+ | SAT- | SAT+ | SPD- |        |  | SPD+ |      |      |      |      |     |     |
-//                     |      |      |      |        |  |       |      |      |      |
+// | BTCLR | BT1 | BT2 |  BT3 |  BT4 |  BT5 |                    |      |      |      |      |     |     |
+// |  F1   | F2  | F3  |  F4  |  F5  |  F6  |                    |  F7  |  F8  |  F9  |  F10 | F11 | F12 |
+// | RGBTOG| RGB- | RGB+| PREV | NEXT |      |                   | CmdL | CmdD | CmdU | CmdR |     |     |
+// |       | HUE- | HUE+ | SAT- | SAT+ | SPD- |        |  | SPD+ | OptL |      |      | OptR |     |     |
+//                       |      |      |      |        |  |      |      |      |      |
             bindings = <
-&bt BT_CLR       &bt BT_SEL 0     &bt BT_SEL 1    &bt BT_SEL 2    &bt BT_SEL 3    &bt BT_SEL 4                                    &none   &none   &none  &none   &none   &none
-&kp F1           &kp F2           &kp F3          &kp F4          &kp F5          &kp F6                                          &kp F7  &kp F8  &kp F9 &kp F10 &kp F11 &kp F12
-&studio_unlock   &rgb_ug RGB_TOG  &rgb_ug RGB_BRD &rgb_ug RGB_BRI &rgb_ug RGB_EFR &rgb_ug RGB_EFF                                 &none   &none   &none  &none   &none   &none
-&trans           &none            &rgb_ug RGB_HUD &rgb_ug RGB_HUI &rgb_ug RGB_SAD &rgb_ug RGB_SAI &rgb_ug RGB_SPD &rgb_ug RGB_SPI &none   &none   &none  &none   &none   &none 
-                        	                        &trans          &trans          &trans          &trans          &trans          &trans  &trans  &trans
+&bt BT_CLR       &bt BT_SEL 0     &bt BT_SEL 1    &bt BT_SEL 2    &bt BT_SEL 3    &bt BT_SEL 4                                    &none        &none        &none      &none          &none   &none
+&kp F1           &kp F2           &kp F3          &kp F4          &kp F5          &kp F6                                          &kp F7       &kp F8       &kp F9     &kp F10        &kp F11 &kp F12
+&studio_unlock   &rgb_ug RGB_TOG  &rgb_ug RGB_BRD &rgb_ug RGB_BRI &rgb_ug RGB_EFR &rgb_ug RGB_EFF                                 &kp LG(LEFT) &kp LG(DOWN) &kp LG(UP) &kp LG(RIGHT)  &none   &none
+&trans           &none            &rgb_ug RGB_HUD &rgb_ug RGB_HUI &rgb_ug RGB_SAD &rgb_ug RGB_SAI &rgb_ug RGB_SPD &rgb_ug RGB_SPI &kp LA(LEFT) &none        &none      &kp LA(RIGHT)  &none   &none 
+                        	                        &trans          &trans          &trans          &trans          &trans          &trans       &trans       &trans
             >;
 
             sensor-bindings = <&inc_dec_kp C_VOL_UP C_VOL_DN>;
@@ -395,8 +395,8 @@
             bindings = <
 &kp ES_BACKSLASH &kp ES_IEXCL &none   &none   &none   &none                      &none    &none     &none   &none      &none     &kp DEL
 &none            &none        &none   &none   &none   &none                      &none    &none     &none   &none      &none     &kp ES_IQMARK
-&none            &none        &none   &none   &none   &none 	                   &kp LG(LEFT) &kp LG(DOWN)  &kp LG(UP)  &kp LG(RIGHT)  &none     &kp RA(BSLH)
-&none            &none        &none   &none   &none   &none   &trans   &trans    &kp LA(LEFT) &none         &none       &kp LA(RIGHT) &kp ES_LT &kp RA(LBKT)
+&none            &none        &none   &none   &none   &none 	                   &kp LEFT &kp DOWN  &kp UP  &kp RIGHT  &none     &kp RA(BSLH)
+&none            &none        &none   &none   &none   &none   &trans   &trans    &none    &none     &none   &none      &kp ES_LT &kp RA(LBKT)
                                       &trans  &trans  &trans  &trans   &kp RET   &trans   &trans    &kp RET
             >;
 
